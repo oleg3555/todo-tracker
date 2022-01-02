@@ -6,38 +6,22 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
           integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/aa7a31f950.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="style.css">
     <style>
-        :root{
-            --dark:#090321;
-            --black:#07001e;
-            --white:aliceblue;
-        }
         .wrapper {
             min-height: calc(100vh - 15px);
             margin: 15px auto 0;
         }
-        body.dark{
-            background-color: var(--dark);
-        }
-        body.dark .navbar{
-            background-color: var(--black) !important;
-            color: var(--white);
-        }
-        body.dark .col-10{
-            color: var(--white);
-        }
-        .transition{
-            transition: 0.3s;
-        }
     </style>
-    <title>LogicPart</title>
+    <title>Task Tracker</title>
 </head>
-<body class="transition">
+<body class="">
 <div class="container-fluid wrapper">
-    <nav class="navbar navbar-light bg-light transition">
+    <nav class="navbar navbar-light bg-light">
         <h1>MyToDoList</h1>
         <div class="d-flex">
-            <button type="button" class="btn btn-primary mx-2" id="sort-growth"><i class="fas fa-sort-numeric-up-alt"></i></button>
+            <button type="button" class="btn btn-primary mx-2" id="sort-growth"><i
+                    class="fas fa-sort-numeric-up-alt"></i></button>
             <button type="button" class="btn btn-primary" id="sort-wane"><i class="fas fa-sort-numeric-up"></i></button>
         </div>
         <div class="d-flex">
@@ -50,10 +34,12 @@
                         aria-haspopup="true" aria-expanded="false">
                     <i class="fas fa-cog"></i>
                 </button>
-                <div class="dropdown-menu p-2 dropdown-menu-right" aria-labelledby="dropdownMenuSettings">
-                    <button type="button" class="btn btn-primary" id="change-theme">
-                        Change Theme
-                    </button>
+                <div class="dropdown-menu p-2 dropdown-menu-right" aria-labelledby="dropdownMenuSettings"
+                     id="dropdown-theme">
+                    <div class="container">
+                        <label for="toggle-theme">Change theme</label>
+                        <input type="checkbox" id="toggle-theme" class="toggle-button">
+                    </div>
                 </div>
             </div>
         </div>
@@ -102,14 +88,14 @@
                             <div class="col-sm-10">
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="gridRadios" id="Low" value="Low"
-                                           required checked>
+                                           required>
                                     <label class="form-check-label" for="Low">
                                         Low
                                     </label>
                                 </div>
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="gridRadios" id="Medium"
-                                           value="Medium">
+                                           value="Medium" checked>
                                     <label class="form-check-label" for="Medium">
                                         Medium
                                     </label>
@@ -126,7 +112,8 @@
                     </fieldset>
                     <div class="form-group row">
                         <div class="col-sm-12 text-center">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal" id="close">Close</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal" id="close">Close
+                            </button>
                             <button type="submit" class="btn btn-primary" id="submitButton">Add task</button>
                         </div>
                     </div>
