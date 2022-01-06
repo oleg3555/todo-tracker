@@ -12,39 +12,53 @@ const closeFormButton = document.getElementById('close');
 const increaseSort = document.getElementById('sort-growth');
 const decreaseSort = document.getElementById('sort-wane');
 const modal = document.getElementById('exampleModal');
-
+const toggleTheme = document.getElementById('toggle-theme');
+const body = document.body;
 let modalEditMode = false;
 let editTaskId = '';
-let allTasks;
-let sortUp;
 
-JSON.parse(localStorage.getItem('sort')) ? sortUp = true : sortUp = false;
-JSON.parse(localStorage.getItem('tasks'))
-    ? allTasks = JSON.parse(localStorage.getItem('tasks'))
-    : allTasks = [];
 
-function renderApp() {
-    currentTasksBlock.innerHTML = null;
-    completedTasksBlock.innerHTML = null;
-    allTasks.map(task => addTaskLayout(task));
-    const tasksCount = getTasksCount();
-    currentTasksTitle.textContent = `ToDo (${tasksCount.current})`;
-    completedTasksTitle.textContent = `Completed (${tasksCount.completed})`;
+const LocalStorageKeys = {
+    tasks: 'tasks',
+    sort: 'sort',
+    darkMode: 'darkMode'
+};
+
+const KeysVariables = {
+    dark: 'dark',
+    transition: 'transition',
+    addTask: 'Add task',
+    editTask: 'Edit task',
+    save: 'Save Changes',
+    editBtn: 'btn-info',
+    changeStatusBtn: 'btn-success',
+    yellowFont: 'bg-warning',
+    greenFont: 'bg-success',
+    redFont: 'bg-danger',
+    lowPriority: 'Low',
+    mediumPriority: 'Medium'
+};
+
+let sortUp = JSON.parse(localStorage.getItem(LocalStorageKeys.sort));
+let allTasks = JSON.parse(localStorage.getItem(LocalStorageKeys.tasks)) || [];
+
+function updateLocalStorage(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
 }
 
-
-function updateLocalStorageTasks() {
-    localStorage.setItem('tasks', JSON.stringify(allTasks));
+function getTasksCount() {
+    const current = allTasks.filter(task => !task.isDone).length;
+    const completed = allTasks.length - current;
+    return {current, completed};
 }
-
 
 function getTaskClassName(priority) {
-    if (priority === 'Low') {
-        return 'bg-success';
-    } else if (priority === 'Medium') {
-        return 'bg-warning';
+    if (priority === KeysVariables.lowPriority) {
+        return KeysVariables.greenFont;
+    } else if (priority === KeysVariables.mediumPriority) {
+        return KeysVariables.yellowFont;
     } else {
-        return 'bg-danger';
+        return KeysVariables.redFont;
     }
 }
 
@@ -81,22 +95,33 @@ function addTaskLayout(task) {
     }
 }
 
+function renderApp() {
+    currentTasksBlock.innerHTML = null;
+    completedTasksBlock.innerHTML = null;
+    allTasks.map(task => addTaskLayout(task));
+    const tasksCount = getTasksCount();
+    currentTasksTitle.textContent = `ToDo (${tasksCount.current})`;
+    completedTasksTitle.textContent = `Completed (${tasksCount.completed})`;
+}
+
 function removeTask(taskId) {
-    allTasks = allTasks.filter(task => task.id !== taskId);
-    updateLocalStorageTasks();
+    const copyTasks = allTasks.filter(task => task.id !== taskId);
+    updateLocalStorage(LocalStorageKeys.tasks, copyTasks);
+    allTasks = copyTasks;
     renderApp();
 }
 
 function changeTaskStatus(taskId) {
-    allTasks = allTasks.map(task => task.id === taskId ? {...task, isDone: !task.isDone} : task);
-    updateLocalStorageTasks();
+    const copyTasks = allTasks.map(task => task.id === taskId ? {...task, isDone: !task.isDone} : task);
+    updateLocalStorage(LocalStorageKeys.tasks, copyTasks);
+    allTasks = copyTasks;
     renderApp();
 }
 
 function showEditModal(taskId) {
     const task = allTasks.find(task => task.id === taskId);
-    modalLabelText.textContent = 'Edit task';
-    submitButton.textContent = 'Save changes';
+    modalLabelText.textContent = KeysVariables.editTask;
+    submitButton.textContent = KeysVariables.save;
     inputTitle.value = task.title;
     inputText.value = task.text;
     document.getElementById(`${task.priority}`).checked = true;
@@ -109,9 +134,9 @@ function tasksBlockListener({target}) {
     const dropDownMenu = target.closest('.dropdown-menu');
     if (dropDownMenu) {
         const taskId = dropDownMenu.getAttribute('id');
-        if (target.classList.contains('btn-info')) {
+        if (target.classList.contains(KeysVariables.editBtn)) {
             showEditModal(taskId);
-        } else if (target.classList.contains('btn-success')) {
+        } else if (target.classList.contains(KeysVariables.changeStatusBtn)) {
             changeTaskStatus(taskId);
         } else {
             removeTask(taskId);
@@ -123,21 +148,26 @@ currentTasksBlock.addEventListener('click', tasksBlockListener);
 completedTasksBlock.addEventListener('click', tasksBlockListener);
 
 function closeModal() {
-    modalLabelText.textContent = 'Add task';
-    submitButton.textContent = 'Add task';
+    modalLabelText.textContent = KeysVariables.addTask;
+    submitButton.textContent = KeysVariables.addTask;
     form.querySelectorAll('.form-check-input')[1].checked = true;
     inputTitle.value = '';
     inputText.value = '';
     modalEditMode = false;
 }
 
-function editTask() {
-    const task = allTasks.find(task => task.id === editTaskId);
+function getSelectedPriority() {
     form.querySelectorAll('.form-check-input').forEach((checkbox) => {
         if (checkbox.checked) {
-            task.priority = checkbox.value;
+            return checkbox.value;
         }
     })
+    return null;
+}
+
+function editTask() {
+    const task = allTasks.find(task => task.id === editTaskId);
+    task.priority = getSelectedPriority();
     task.title = inputTitle.value;
     task.text = inputText.value;
 }
@@ -151,31 +181,25 @@ function getTimeValues(time) {
 
 function addTask() {
     const taskData = {};
-    form.querySelectorAll('.form-check-input').forEach((checkbox) => {
-        if (checkbox.checked) {
-            taskData.priority = checkbox.value;
-        }
-    })
+    taskData.priority = getSelectedPriority();
     taskData.title = inputTitle.value;
     taskData.text = inputText.value;
     taskData.id = generateId();
     taskData.isDone = false;
     taskData.time = new Date().getTime();
     allTasks.push(taskData);
-    updateLocalStorageTasks();
-    renderApp();
 }
 
 function formSubmitListener(event) {
     event.preventDefault();
     if (modalEditMode) {
         editTask();
-        renderApp();
     } else {
         addTask();
     }
     closeFormButton.click();
-    updateLocalStorageTasks();
+    updateLocalStorage(LocalStorageKeys.tasks, allTasks);
+    renderApp();
     closeModal();
 }
 
@@ -194,17 +218,12 @@ function generateId() {
     return Math.random().toString(36).slice(2);
 }
 
-function getTasksCount() {
-    const current = allTasks.filter(task => !task.isDone).length;
-    const completed = allTasks.length - current;
-    return {current, completed};
-}
 
 function sortListener(sort) {
     if (sortUp !== sort) {
         sortUp = sort;
         renderApp();
-        localStorage.setItem('sort', JSON.stringify(sortUp));
+        updateLocalStorage(LocalStorageKeys.sort, sortUp);
     }
 }
 
@@ -212,17 +231,15 @@ increaseSort.addEventListener('click', () => sortListener(true));
 decreaseSort.addEventListener('click', () => sortListener(false));
 
 
-const body = document.body;
-const toggleTheme = document.getElementById('toggle-theme');
 toggleTheme.addEventListener('click', () => {
-    body.classList.toggle('dark')
-    localStorage.setItem('darkMode', JSON.stringify(body.classList.contains('dark')));
+    body.classList.toggle(KeysVariables.dark);
+    updateLocalStorage(LocalStorageKeys.darkMode, body.classList.contains(KeysVariables.dark));
 });
-if (JSON.parse(localStorage.getItem('darkMode'))) {
-    body.classList.add('dark');
+if (JSON.parse(localStorage.getItem(LocalStorageKeys.darkMode))) {
+    body.classList.add(KeysVariables.dark);
 }
 document.addEventListener("DOMContentLoaded", () => {
-    body.classList.add('transition')
+    body.classList.add(KeysVariables.transition);
 })
 
 renderApp();

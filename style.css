@@ -6,10 +6,13 @@
     --blue-gray:#365d73;
     --green:#138d45;
     --blue:#3067f8;
+    --danger:#FE7E6D;
+    --warning:#F0BB62;
+    --success:#519259;
 }
 
 .transition{
-    transition: var(--default-transition)t;
+    transition: var(--default-transition);
 }
 .dark {
     background-color: var(--dark-gray) !important;
@@ -34,6 +37,15 @@
 }
 .dark .dropdown-menu{
     background-color: var(--light-gray) ;
+}
+.dark .bg-danger{
+    background-color:var(--danger) !important;
+}
+.dark .bg-success{
+    background-color: var(--success) !important;
+}
+.dark .bg-warning{
+    background-color: var(--warning) !important;
 }
 
 .toggle-button {
