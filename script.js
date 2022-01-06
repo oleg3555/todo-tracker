@@ -124,7 +124,7 @@ function showEditModal(taskId) {
     submitButton.textContent = KeysVariables.save;
     inputTitle.value = task.title;
     inputText.value = task.text;
-    document.getElementById(`${task.priority}`).checked = true;
+    form.elements[task.priority].checked = true;
     editTaskId = taskId;
     modalEditMode = true;
 }
