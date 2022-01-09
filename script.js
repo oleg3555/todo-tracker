@@ -1,4 +1,4 @@
-const form = document.forms[0];
+const form = document.querySelector('.form');
 const currentTasksBlock = document.getElementById('currentTasks');
 const completedTasksBlock = document.getElementById('completedTasks');
 const currentTasksTitle = document.getElementById('todo-title');
@@ -17,7 +17,6 @@ const body = document.body;
 let modalEditMode = false;
 let editTaskId = '';
 
-
 const LocalStorageKeys = {
     tasks: 'tasks',
     sort: 'sort',
@@ -25,25 +24,45 @@ const LocalStorageKeys = {
 };
 
 const KeysVariables = {
-    dark: 'dark',
-    transition: 'transition',
-    addTask: 'Add task',
-    editTask: 'Edit task',
-    save: 'Save Changes',
-    editBtn: 'btn-info',
-    changeStatusBtn: 'btn-success',
-    yellowFont: 'bg-warning',
-    greenFont: 'bg-success',
-    redFont: 'bg-danger',
-    lowPriority: 'Low',
-    mediumPriority: 'Medium'
+    theme: {
+        dark: 'dark',
+    },
+    text: {
+        addTask: 'Add task',
+        editTask: 'Edit task',
+        save: 'Save Changes',
+    },
+    styles: {
+        transition: 'transition',
+        yellowFont: 'bg-warning',
+        greenFont: 'bg-success',
+        redFont: 'bg-danger',
+        lowPriority: 'Low',
+        mediumPriority: 'Medium'
+    },
+    buttons: {
+        editBtn: 'btn-info',
+        changeStatusBtn: 'btn-success',
+    }
 };
-
+localStorage.clear();
 let sortUp = JSON.parse(localStorage.getItem(LocalStorageKeys.sort));
 let allTasks = JSON.parse(localStorage.getItem(LocalStorageKeys.tasks)) || [];
 
 function updateLocalStorage(key, value) {
     localStorage.setItem(key, JSON.stringify(value));
+}
+
+function getTime(date) {
+    return date.toTimeString().split('').splice(0, 5).join('');
+}
+
+function getDate(date) {
+    return date.toLocaleDateString();
+}
+
+function generateId() {
+    return Math.random().toString(36).slice(2);
 }
 
 function getTasksCount() {
@@ -53,25 +72,25 @@ function getTasksCount() {
 }
 
 function getTaskClassName(priority) {
-    if (priority === KeysVariables.lowPriority) {
-        return KeysVariables.greenFont;
-    } else if (priority === KeysVariables.mediumPriority) {
-        return KeysVariables.yellowFont;
+    if (priority === KeysVariables.styles.lowPriority) {
+        return KeysVariables.styles.greenFont;
+    } else if (priority === KeysVariables.styles.mediumPriority) {
+        return KeysVariables.styles.yellowFont;
     } else {
-        return KeysVariables.redFont;
+        return KeysVariables.styles.redFont;
     }
 }
 
 function addTaskLayout(task) {
     const taskLayout = document.createElement('li');
-    const time = getTimeValues(task.time);
+    const time = new Date(task.time);
     taskLayout.className = `list-group-item d-flex w-100 mb-2 ${getTaskClassName(task.priority)}`;
     taskLayout.innerHTML = `<div class="w-100 mr-2">
                 <div class="d-flex w-100 justify-content-between">
                     <h5 class="mb-1">${task.title}</h5>
                     <div>
                         <small class="mr-2">${task.priority} priority</small>
-                        <small>${time.timeString} ${time.dateString}</small>
+                        <small>${getTime(time)} ${getDate(time)}</small>
                     </div>
                 </div>
                 <p class="mb-1 w-100">${task.text}</p>
@@ -120,8 +139,8 @@ function changeTaskStatus(taskId) {
 
 function showEditModal(taskId) {
     const task = allTasks.find(task => task.id === taskId);
-    modalLabelText.textContent = KeysVariables.editTask;
-    submitButton.textContent = KeysVariables.save;
+    modalLabelText.textContent = KeysVariables.text.editTask;
+    submitButton.textContent = KeysVariables.text.save;
     inputTitle.value = task.title;
     inputText.value = task.text;
     form.elements[task.priority].checked = true;
@@ -134,9 +153,9 @@ function tasksBlockListener({target}) {
     const dropDownMenu = target.closest('.dropdown-menu');
     if (dropDownMenu) {
         const taskId = dropDownMenu.getAttribute('id');
-        if (target.classList.contains(KeysVariables.editBtn)) {
+        if (target.classList.contains(KeysVariables.buttons.editBtn)) {
             showEditModal(taskId);
-        } else if (target.classList.contains(KeysVariables.changeStatusBtn)) {
+        } else if (target.classList.contains(KeysVariables.buttons.changeStatusBtn)) {
             changeTaskStatus(taskId);
         } else {
             removeTask(taskId);
@@ -148,8 +167,8 @@ currentTasksBlock.addEventListener('click', tasksBlockListener);
 completedTasksBlock.addEventListener('click', tasksBlockListener);
 
 function closeModal() {
-    modalLabelText.textContent = KeysVariables.addTask;
-    submitButton.textContent = KeysVariables.addTask;
+    modalLabelText.textContent = KeysVariables.text.addTask;
+    submitButton.textContent = KeysVariables.text.addTask;
     form.querySelectorAll('.form-check-input')[1].checked = true;
     inputTitle.value = '';
     inputText.value = '';
@@ -157,26 +176,21 @@ function closeModal() {
 }
 
 function getSelectedPriority() {
+    let result;
     form.querySelectorAll('.form-check-input').forEach((checkbox) => {
         if (checkbox.checked) {
-            return checkbox.value;
+            result = checkbox.value;
         }
     })
-    return null;
+    return result;
 }
+
 
 function editTask() {
     const task = allTasks.find(task => task.id === editTaskId);
     task.priority = getSelectedPriority();
     task.title = inputTitle.value;
     task.text = inputText.value;
-}
-
-function getTimeValues(time) {
-    const date = new Date(time);
-    const timeString = date.toTimeString().split('').splice(0, 5).join('');
-    const dateString = date.toLocaleDateString();
-    return {timeString, dateString};
 }
 
 function addTask() {
@@ -214,11 +228,6 @@ closeFormButton.addEventListener('click', closeModal);
 closeFormIcon.addEventListener('click', closeModal);
 
 
-function generateId() {
-    return Math.random().toString(36).slice(2);
-}
-
-
 function sortListener(sort) {
     if (sortUp !== sort) {
         sortUp = sort;
@@ -232,14 +241,14 @@ decreaseSort.addEventListener('click', () => sortListener(false));
 
 
 toggleTheme.addEventListener('click', () => {
-    body.classList.toggle(KeysVariables.dark);
-    updateLocalStorage(LocalStorageKeys.darkMode, body.classList.contains(KeysVariables.dark));
+    body.classList.toggle(KeysVariables.theme.dark);
+    updateLocalStorage(LocalStorageKeys.darkMode, body.classList.contains(KeysVariables.theme.dark));
 });
 if (JSON.parse(localStorage.getItem(LocalStorageKeys.darkMode))) {
-    body.classList.add(KeysVariables.dark);
+    body.classList.add(KeysVariables.theme.dark);
 }
 document.addEventListener("DOMContentLoaded", () => {
-    body.classList.add(KeysVariables.transition);
+    body.classList.add(KeysVariables.styles.transition);
 })
 
 renderApp();
