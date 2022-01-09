@@ -45,7 +45,6 @@ const KeysVariables = {
         changeStatusBtn: 'btn-success',
     }
 };
-localStorage.clear();
 let sortUp = JSON.parse(localStorage.getItem(LocalStorageKeys.sort));
 let allTasks = JSON.parse(localStorage.getItem(LocalStorageKeys.tasks)) || [];
 
