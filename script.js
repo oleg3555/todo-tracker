@@ -13,41 +13,24 @@ const increaseSort = document.getElementById('sort-growth');
 const decreaseSort = document.getElementById('sort-wane');
 const modal = document.getElementById('exampleModal');
 const toggleTheme = document.getElementById('toggle-theme');
+const mediumPriority=form.elements[PRIORITIES.medium];
 const body = document.body;
 let modalEditMode = false;
 let editTaskId = '';
 
-const LocalStorageKeys = {
-    tasks: 'tasks',
-    sort: 'sort',
-    darkMode: 'darkMode'
-};
-
-const KeysVariables = {
-    theme: {
-        dark: 'dark',
-    },
-    text: {
-        addTask: 'Add task',
-        editTask: 'Edit task',
-        save: 'Save Changes',
-    },
-    styles: {
-        transition: 'transition',
-        yellowFont: 'bg-warning',
-        greenFont: 'bg-success',
-        redFont: 'bg-danger',
-        lowPriority: 'Low',
-        mediumPriority: 'Medium'
-    },
-    buttons: {
-        editBtn: 'btn-info',
-        changeStatusBtn: 'btn-success',
-    }
-};
 let sortUp = JSON.parse(localStorage.getItem(LocalStorageKeys.sort));
 let allTasks = JSON.parse(localStorage.getItem(LocalStorageKeys.tasks)) || [];
 
+document.addEventListener("DOMContentLoaded", () => {
+    if (JSON.parse(localStorage.getItem(LocalStorageKeys.darkMode))) {
+        body.classList.add(THEME_CLASSNAMES.dark);
+    }
+});
+toggleTheme.addEventListener('click', () => {
+    body.classList.add(THEME_CLASSNAMES.transition);
+    body.classList.toggle(THEME_CLASSNAMES.dark);
+    updateLocalStorage(LocalStorageKeys.darkMode, body.classList.contains(THEME_CLASSNAMES.dark));
+});
 function updateLocalStorage(key, value) {
     localStorage.setItem(key, JSON.stringify(value));
 }
@@ -71,12 +54,12 @@ function getTasksCount() {
 }
 
 function getTaskClassName(priority) {
-    if (priority === KeysVariables.styles.lowPriority) {
-        return KeysVariables.styles.greenFont;
-    } else if (priority === KeysVariables.styles.mediumPriority) {
-        return KeysVariables.styles.yellowFont;
+    if (priority === PRIORITIES.low) {
+        return TASK_CLASSNAMES.greenFont;
+    } else if (priority === PRIORITIES.medium) {
+        return TASK_CLASSNAMES.yellowFont;
     } else {
-        return KeysVariables.styles.redFont;
+        return TASK_CLASSNAMES.redFont;
     }
 }
 
@@ -138,8 +121,8 @@ function changeTaskStatus(taskId) {
 
 function showEditModal(taskId) {
     const task = allTasks.find(task => task.id === taskId);
-    modalLabelText.textContent = KeysVariables.text.editTask;
-    submitButton.textContent = KeysVariables.text.save;
+    modalLabelText.textContent = TEXT_VARIABLES.editTask;
+    submitButton.textContent = TEXT_VARIABLES.save;
     inputTitle.value = task.title;
     inputText.value = task.text;
     form.elements[task.priority].checked = true;
@@ -152,9 +135,9 @@ function tasksBlockListener({target}) {
     const dropDownMenu = target.closest('.dropdown-menu');
     if (dropDownMenu) {
         const taskId = dropDownMenu.getAttribute('id');
-        if (target.classList.contains(KeysVariables.buttons.editBtn)) {
+        if (target.classList.contains(BUTTON_CLASSNAMES.editBtn)) {
             showEditModal(taskId);
-        } else if (target.classList.contains(KeysVariables.buttons.changeStatusBtn)) {
+        } else if (target.classList.contains(BUTTON_CLASSNAMES.changeStatusBtn)) {
             changeTaskStatus(taskId);
         } else {
             removeTask(taskId);
@@ -166,22 +149,16 @@ currentTasksBlock.addEventListener('click', tasksBlockListener);
 completedTasksBlock.addEventListener('click', tasksBlockListener);
 
 function closeModal() {
-    modalLabelText.textContent = KeysVariables.text.addTask;
-    submitButton.textContent = KeysVariables.text.addTask;
-    form.querySelectorAll('.form-check-input')[1].checked = true;
+    modalLabelText.textContent = TEXT_VARIABLES.addTask;
+    submitButton.textContent = TEXT_VARIABLES.addTask;
+    mediumPriority.checked = true;
     inputTitle.value = '';
     inputText.value = '';
     modalEditMode = false;
 }
 
 function getSelectedPriority() {
-    let result;
-    form.querySelectorAll('.form-check-input').forEach((checkbox) => {
-        if (checkbox.checked) {
-            result = checkbox.value;
-        }
-    })
-    return result;
+    return [...form.querySelectorAll('.form-check-input')].find(item => item.checked).value;
 }
 
 
@@ -237,17 +214,5 @@ function sortListener(sort) {
 
 increaseSort.addEventListener('click', () => sortListener(true));
 decreaseSort.addEventListener('click', () => sortListener(false));
-
-
-toggleTheme.addEventListener('click', () => {
-    body.classList.toggle(KeysVariables.theme.dark);
-    updateLocalStorage(LocalStorageKeys.darkMode, body.classList.contains(KeysVariables.theme.dark));
-});
-if (JSON.parse(localStorage.getItem(LocalStorageKeys.darkMode))) {
-    body.classList.add(KeysVariables.theme.dark);
-}
-document.addEventListener("DOMContentLoaded", () => {
-    body.classList.add(KeysVariables.styles.transition);
-})
 
 renderApp();
