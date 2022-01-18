@@ -11,6 +11,10 @@
     --success:#519259;
 }
 
+.wrapper {
+    min-height: calc(100vh - 15px);
+    margin: 15px auto 0;
+}
 .transition{
     transition: var(--default-transition);
 }

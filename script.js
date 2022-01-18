@@ -7,18 +7,17 @@ const inputTitle = document.getElementById('inputTitle');
 const inputText = document.getElementById('inputText');
 const modalLabelText = document.getElementById('exampleModalLabel');
 const submitButton = document.getElementById('submitButton');
-const closeFormIcon = document.getElementById('closeIcon');
 const closeFormButton = document.getElementById('close');
+const addTaskButton=document.getElementById('addTaskBtn');
 const increaseSort = document.getElementById('sort-growth');
 const decreaseSort = document.getElementById('sort-wane');
-const modal = document.getElementById('exampleModal');
 const toggleTheme = document.getElementById('toggle-theme');
-const mediumPriority=form.elements[PRIORITIES.medium];
+const mediumPriority = form.elements[PRIORITIES.medium];
 const body = document.body;
 let modalEditMode = false;
 let editTaskId = '';
 
-let sortUp = JSON.parse(localStorage.getItem(LocalStorageKeys.sort));
+let sortUp = JSON.parse(localStorage.getItem(LocalStorageKeys.sort)) || false;
 let allTasks = JSON.parse(localStorage.getItem(LocalStorageKeys.tasks)) || [];
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -31,6 +30,7 @@ toggleTheme.addEventListener('click', () => {
     body.classList.toggle(THEME_CLASSNAMES.dark);
     updateLocalStorage(LocalStorageKeys.darkMode, body.classList.contains(THEME_CLASSNAMES.dark));
 });
+
 function updateLocalStorage(key, value) {
     localStorage.setItem(key, JSON.stringify(value));
 }
@@ -62,7 +62,14 @@ function getTaskClassName(priority) {
         return TASK_CLASSNAMES.redFont;
     }
 }
-
+addTaskButton.addEventListener('click',()=>{
+    modalLabelText.textContent = TEXT_VARIABLES.addTask;
+    submitButton.textContent = TEXT_VARIABLES.addTask;
+    mediumPriority.checked = true;
+    inputTitle.value = '';
+    inputText.value = '';
+    modalEditMode = false;
+})
 function addTaskLayout(task) {
     const taskLayout = document.createElement('li');
     const time = new Date(task.time);
@@ -106,16 +113,16 @@ function renderApp() {
 }
 
 function removeTask(taskId) {
-    const copyTasks = allTasks.filter(task => task.id !== taskId);
-    updateLocalStorage(LocalStorageKeys.tasks, copyTasks);
-    allTasks = copyTasks;
+    const newTasksList = allTasks.filter(task => task.id !== taskId);
+    updateLocalStorage(LocalStorageKeys.tasks, newTasksList);
+    allTasks = newTasksList;
     renderApp();
 }
 
 function changeTaskStatus(taskId) {
-    const copyTasks = allTasks.map(task => task.id === taskId ? {...task, isDone: !task.isDone} : task);
-    updateLocalStorage(LocalStorageKeys.tasks, copyTasks);
-    allTasks = copyTasks;
+    const updatedTasksList = allTasks.map(task => task.id === taskId ? {...task, isDone: !task.isDone} : task);
+    updateLocalStorage(LocalStorageKeys.tasks, updatedTasksList);
+    allTasks = updatedTasksList;
     renderApp();
 }
 
@@ -148,14 +155,6 @@ function tasksBlockListener({target}) {
 currentTasksBlock.addEventListener('click', tasksBlockListener);
 completedTasksBlock.addEventListener('click', tasksBlockListener);
 
-function closeModal() {
-    modalLabelText.textContent = TEXT_VARIABLES.addTask;
-    submitButton.textContent = TEXT_VARIABLES.addTask;
-    mediumPriority.checked = true;
-    inputTitle.value = '';
-    inputText.value = '';
-    modalEditMode = false;
-}
 
 function getSelectedPriority() {
     return [...form.querySelectorAll('.form-check-input')].find(item => item.checked).value;
@@ -190,18 +189,10 @@ function formSubmitListener(event) {
     closeFormButton.click();
     updateLocalStorage(LocalStorageKeys.tasks, allTasks);
     renderApp();
-    closeModal();
 }
 
 form.addEventListener('submit', formSubmitListener);
 
-modal.addEventListener('click', ({target}) => {
-    if (!target.closest('.modal-content')) {
-        closeModal();
-    }
-});
-closeFormButton.addEventListener('click', closeModal);
-closeFormIcon.addEventListener('click', closeModal);
 
 
 function sortListener(sort) {
