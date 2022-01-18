@@ -106,7 +106,7 @@ function addTaskLayout(task) {
 function renderApp() {
     currentTasksBlock.innerHTML = null;
     completedTasksBlock.innerHTML = null;
-    allTasks.map(task => addTaskLayout(task));
+    allTasks.forEach(task => addTaskLayout(task));
     const tasksCount = getTasksCount();
     currentTasksTitle.textContent = `ToDo (${tasksCount.current})`;
     completedTasksTitle.textContent = `Completed (${tasksCount.completed})`;
