@@ -8,7 +8,7 @@ const inputText = document.getElementById('inputText');
 const modalLabelText = document.getElementById('exampleModalLabel');
 const submitButton = document.getElementById('submitButton');
 const closeFormButton = document.getElementById('close');
-const addTaskButton=document.getElementById('addTaskBtn');
+const addTaskButton = document.getElementById('addTaskBtn');
 const increaseSort = document.getElementById('sort-growth');
 const decreaseSort = document.getElementById('sort-wane');
 const toggleTheme = document.getElementById('toggle-theme');
@@ -62,7 +62,8 @@ function getTaskClassName(priority) {
         return TASK_CLASSNAMES.redFont;
     }
 }
-addTaskButton.addEventListener('click',()=>{
+
+addTaskButton.addEventListener('click', () => {
     modalLabelText.textContent = TEXT_VARIABLES.addTask;
     submitButton.textContent = TEXT_VARIABLES.addTask;
     mediumPriority.checked = true;
@@ -70,43 +71,42 @@ addTaskButton.addEventListener('click',()=>{
     inputText.value = '';
     modalEditMode = false;
 })
-function addTaskLayout(task) {
-    const taskLayout = document.createElement('li');
+
+function getTaskLayout(task) {
     const time = new Date(task.time);
-    taskLayout.className = `list-group-item d-flex w-100 mb-2 ${getTaskClassName(task.priority)}`;
-    taskLayout.innerHTML = `<div class="w-100 mr-2">
-                <div class="d-flex w-100 justify-content-between">
-                    <h5 class="mb-1">${task.title}</h5>
-                    <div>
-                        <small class="mr-2">${task.priority} priority</small>
-                        <small>${getTime(time)} ${getDate(time)}</small>
+    return `<li class="list-group-item d-flex w-100 mb-2 ${getTaskClassName(task.priority)}">
+                <div class="w-100 mr-2">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">${task.title}</h5>
+                        <div>
+                            <small class="mr-2">${task.priority} priority</small>
+                            <small>${getTime(time)} ${getDate(time)}</small>
+                        </div>
+                    </div>
+                    <p class="mb-1 w-100">${task.text}</p>
+                </div>
+                <div class="dropdown m-2 dropleft">
+                    <button class="btn btn-secondary h-100" type="button" id="dropdownMenuItem1"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" >
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div class="dropdown-menu p-2 flex-column" aria-labelledby="dropdownMenuItem1" id="${task.id}">
+                        ${!task.isDone ? `<button type="button" class="btn btn-success w-100">Complete</button>
+                    <button type="button" class="btn btn-info w-100 my-2" data-toggle="modal" data-target="#exampleModal">Edit</button>`
+                    : `<button type="button" class="btn btn-success w-100 mb-2">Uncomplete</button>`}
+                    <button type="button" class="btn btn-danger w-100">Delete</button>
                     </div>
                 </div>
-                <p class="mb-1 w-100">${task.text}</p>
-            </div>
-            <div class="dropdown m-2 dropleft">
-                <button class="btn btn-secondary h-100" type="button" id="dropdownMenuItem1"
-                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" >
-                    <i class="fas fa-ellipsis-v"></i>
-                </button>
-                <div class="dropdown-menu p-2 flex-column" aria-labelledby="dropdownMenuItem1" id="${task.id}">
-                    ${!task.isDone ? `<button type="button" class="btn btn-success w-100">Complete</button>
-    <button type="button" class="btn btn-info w-100 my-2" data-toggle="modal" data-target="#exampleModal">Edit</button>`
-        : `<button type="button" class="btn btn-success w-100 mb-2">Uncomplete</button>`}
-                    <button type="button" class="btn btn-danger w-100">Delete</button>
-                </div>
-            </div>`;
-    if (sortUp) {
-        task.isDone ? completedTasksBlock.append(taskLayout) : currentTasksBlock.append(taskLayout);
-    } else {
-        task.isDone ? completedTasksBlock.prepend(taskLayout) : currentTasksBlock.prepend(taskLayout);
-    }
+            </li>`;
 }
 
 function renderApp() {
     currentTasksBlock.innerHTML = null;
     completedTasksBlock.innerHTML = null;
-    allTasks.forEach(task => addTaskLayout(task));
+    const completedTasksList = allTasks.filter(task => task.isDone).map(task => getTaskLayout(task));
+    const currentTasksList = allTasks.filter(task => !task.isDone).map(task => getTaskLayout(task));
+    completedTasksBlock.innerHTML = sortUp ? completedTasksList.join('') : completedTasksList.reverse().join('');
+    currentTasksBlock.innerHTML = sortUp ? currentTasksList.join('') : currentTasksList.reverse().join('');
     const tasksCount = getTasksCount();
     currentTasksTitle.textContent = `ToDo (${tasksCount.current})`;
     completedTasksTitle.textContent = `Completed (${tasksCount.completed})`;
@@ -192,7 +192,6 @@ function formSubmitListener(event) {
 }
 
 form.addEventListener('submit', formSubmitListener);
-
 
 
 function sortListener(sort) {
